@@ -1,10 +1,13 @@
-import Redis from 'ioredis';
+import { createClient } from 'redis';
 
-let redis: Redis | null = null;
+let redis: ReturnType<typeof createClient> | null = null;
 
-export function getRedis(): Redis {
+export async function getRedis() {
   if (!redis) {
-    redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+    redis = createClient({
+      url: process.env.REDIS_URL || 'redis://localhost:6379'
+    });
+    await redis.connect();
   }
   return redis;
 }
