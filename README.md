@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍹 Epcot Shirt Exchange
 
-## Getting Started
+A mobile-friendly web app for coordinating a "Drink Around The World" shirt exchange among friends.
 
-First, run the development server:
+## Features
+
+- **Join & Confirm**: Friends enter their name and shirt size to join
+- **Random Assignment**: Admin generates random circular assignments (everyone buys for one person)
+- **Locked Assignments**: Once generated, assignments never change (even on refresh)
+- **Shirt Suggestions**: Anyone can suggest shirt ideas for participants
+- **Phone Memory**: Each device remembers who you are via localStorage
+- **Admin Panel**: Password-protected admin controls
+
+## Tech Stack
+
+- **Next.js 15** (App Router)
+- **TypeScript**
+- **Tailwind CSS**
+- **Redis** (for shared state)
+- **Vercel** (deployment)
+
+## Setup
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Set Up Redis
+
+You need a Redis instance. Options:
+- **Vercel KV** (recommended for Vercel deployment)
+- **Upstash Redis** (free tier available)
+- **Local Redis** (for development)
+
+### 3. Environment Variables
+
+Create a `.env.local` file:
+
+```bash
+# Redis connection URL
+REDIS_URL=redis://localhost:6379
+# or for Upstash/Vercel KV:
+# REDIS_URL=rediss://default:your-password@your-host.upstash.io:6379
+
+# Admin password hash (generate with bcrypt)
+ADMIN_PASSWORD_HASH=$2a$10$YourHashHere
+```
+
+### 4. Generate Admin Password Hash
+
+```bash
+node -e "console.log(require('bcryptjs').hashSync('your-password', 10))"
+```
+
+Replace `ADMIN_PASSWORD_HASH` in `.env.local` with the output.
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Connect Redis
 
-## Learn More
+In your Vercel project:
+- Go to **Storage** → **Create Database** → **KV**
+- Or connect your Upstash Redis instance
+- Vercel will automatically set `REDIS_URL`
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Set Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+In Vercel project settings → **Environment Variables**:
+- `ADMIN_PASSWORD_HASH`: Your bcrypt hash
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Deploy
 
-## Deploy on Vercel
+```bash
+vercel
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Or connect your GitHub repo to Vercel for automatic deployments.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Usage
+
+### For Participants
+
+1. Open the app link
+2. Enter your name and shirt size
+3. Tap "Yes, I'm In!"
+4. Wait for admin to generate assignments
+5. Once assigned, see who you're buying for
+6. View and add shirt suggestions
+
+### For Admin
+
+1. Click "Admin" link at bottom of home page
+2. Enter admin password
+3. View all participants
+4. Click "Generate Assignments Now" when ready (minimum 3 people)
+5. Optionally view full mapping
+6. Remove participants or reset everything if needed
+
+## How It Works
+
+- **Phone Memory**: localStorage stores your unique ID
+- **Shared State**: Redis stores all participants, assignments, and suggestions
+- **Assignment Lock**: Once generated, assignments are marked as locked in Redis
+- **Circular Exchange**: Algorithm creates a circular chain (A→B→C→A) ensuring no one gets themselves
+
+## API Routes
+
+- `POST /api/join` - Join the exchange
+- `GET /api/status` - Get current status
+- `POST /api/suggest` - Add a shirt suggestion
+- `POST /api/admin/generate` - Generate assignments (admin)
+- `GET /api/admin/participants` - List participants (admin)
+- `DELETE /api/admin/participants` - Remove participant (admin)
+- `GET /api/admin/mapping` - View full mapping (admin)
+- `POST /api/admin/reset` - Reset everything (admin)
+
+## License
+
+MIT
