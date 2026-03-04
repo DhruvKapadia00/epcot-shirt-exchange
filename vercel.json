@@ -1,4 +1,5 @@
 {
+  "name": "epcot-shirt-exchange-2026",
   "env": {
     "REDIS_URL": "@redis_url",
     "ADMIN_PASSWORD_HASH": "@admin_password_hash"
